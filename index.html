@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html>  
+<head>
+    <title>摩斯密码翻译器-有敲击声音的在线摩斯密码翻译练习工具</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=0">
+    <meta name="keywords" content="摩斯密码翻译器,摩斯密码,摩斯密码表,摩斯码,摩斯密码敲打,摩斯密码敲击,摩斯密码练习,摩斯密码练习工具,摩斯密码在线工具" />
+    <meta name="description" content="这是一个有声音的摩斯密码翻译器，可以帮助用户感受摩斯密码敲击的乐趣，并从中学习掌握摩斯密码的翻译和使用。" />
+    <meta name="author" content="Zjmainstay" />
+    <meta name="website" content="http://www.zjmainstay.cn" />
+</head>  
+<body>
+    <style type="text/css">
+        /* 内容禁选 */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;user-select: none;
+        }
+        /* 禁止长按图片保存 */
+        img {
+            pointer-events:none;
+        }
+        .fl {
+            float: left;
+        }
+        #typein-btn {
+            margin-top: 30px;
+        }
+        .btn {
+            font-size: 20px;
+            clear: both;
+            margin-top: 20px;
+            width: 100px;
+            height: 50px;
+            margin-right: 20px;
+            border-radius: 10%;
+        }
+        #morse-code-content, #word-content{
+            margin-top: 30px;
+            font-size: 20px;
+        }
+        #code-info, #wechat-miniprogram-morsecode {
+            width:300px;
+            max-height: 220px;
+        }
+        textarea {
+            border: 1px solid #e0dddd;
+        }
+        #tips {
+            margin-top: 30px;
+            font-size: 18px;
+            margin-left: 15px;
+        }
+        #tips p {
+            margin: 1px;
+        }
+        .morse-code {
+            clear: both;
+            margin-left: 15px;
+        }
+        .red-text {
+            color: red;
+        }
+        #tips .morse-code-text {
+            margin: 10px 0;
+        }
+        /* PC */
+        @media screen and (min-width: 768px) {
+            #tips {
+                font-size: 13px;
+                margin-left: 15px;
+            }
+            #tips p {
+                font-size: 13px;
+            }
+            .hide-in-pc {
+                display: none;
+            }
+            .show-in-pc {
+                display: block;
+            }
+        }
+        /* 手机 */
+        @media (max-device-width: 768px) {
+            .btn {
+                margin-left: 20px;
+                margin-right: 30px;
+                margin-top: 40px;
+                width: 120px;
+                height: 70px;
+                font-size: 22px;
+            }
+            #tips p {
+                font-size: 17px;
+            }
+            #code-info, #wechat-miniprogram-morsecode {
+                width:550px;
+                max-height: 500px;
+            }
+            #wechat-miniprogram-morsecode {
+                margin-top: 10px;
+                margin-left: 10px;
+                width: 95% !important;
+            }
+            #morse-code-content, #word-content{
+                float: left;
+                clear: both;
+                font-size: 40px;
+                color: red;
+                width: 720px !important;
+                height: 300px;
+                border: 1px solid red;
+            }
+            .hide-in-phone {
+                display: none;
+            }
+            .show-in-phone {
+                 display: block;
+            }
+            #toggle-tips {
+                float: right;
+                margin-right: 30px;
+                font-size: 30px;
+                color: red;
+            }
+        }
+    </style>
+    <div class="nav fl">
+        <!-- <input type="button" value="刷新" id="refresh-btn" class="btn fl hide-in-pc show-in-phone" onclick="location.href=location.href"> -->
+        <input type="button" value="录入" id="typein-btn" class="btn fl hide-in-phone show-in-pc">
+        <input type="button" value="静音" id="toggle-sound-btn" class="btn fl">
+        <input type="button" value="播放" id="play-btn" class="btn fl">
+        <input type="button" value="停止录入" id="stop-btn" class="btn fl">
+        <input type="button" value="转摩斯码" id="to-code-btn" class="btn fl">
+        <input type="button" value="转明文" id="to-char-btn" class="btn fl">
+        <input type="button" value="清屏" id="clear-btn" class="btn fl">
+    </div>
+    <div class="content fl">
+        <textarea id="morse-code-content" rows="20" cols="30" placeholder="摩斯密码输入框"></textarea>
+        <textarea id="word-content" rows="20" cols="30" placeholder="明文输入框"></textarea>
+    </div>
+
+    <div id="tips" class="fl">
+        <p>使用说明<span id="toggle-tips" class="hide-in-pc show-in-phone show-tips">[隐藏]</span></p>
+        <div class="tips-info">
+            <p class="hide-in-phone show-in-pc">1. 鼠标点击【录入】或<span class="red-text">键盘输入任意键</span>开始录入</p>
+            <p class="hide-in-pc show-in-phone">1. 手机<span class="red-text">点击空白处</span>即可录入</p>
+            <p>2. 点击时间在<span class="red-text">150毫秒内</span>为“嘀”</p>
+            <p>3. 点击时间<span class="red-text">大于150毫秒</span>为“嗒”</p>
+            <p>4. 单词内字符输入间隔为<span class="red-text">300 ~ 1000毫秒</span>（如：love，输入每个字母的时间间隔为300~1000毫秒之间）</p>
+            <p>5. 单词之间输入间隔为<span class="red-text">大于1000毫秒</span>（如：i love，两个单词之间的间隔需大于1000毫秒）</p>
+            <p>6. <span class="red-text">单词</span>转<span class="red-text">摩斯密码</span>操作：先点击【停止录入】关闭页面录入功能，在<span class="red-text">右侧</span>输入框中输入<span class="red-text">单词</span>，再点击【转摩斯码】即可</p>
+            <p>7. <span class="red-text">摩斯密码</span>转<span class="red-text">单词</span>操作：先点击【停止录入】关闭页面录入功能，在<span class="red-text">左侧</span>输入框中输入<span class="red-text">摩斯密码</span>，再点击【转明文】即可</p>
+            <p>8. 点击【播放】开始自动播放摩斯密码录入效果</p>
+            <p>9. 点击【清屏】可清除输入内容</p>
+        </div>
+        <p class="morse-code-text">
+            摩斯密码表
+        </p>
+        <img id="code-info" class="lazy-img" alt="摩斯密码表" src="loading.png" data-src="normal-code.png">
+        <img class="lazy-img" id="wechat-miniprogram-morsecode" alt="微信小程序：摩斯密码翻译与学习" src="loading.png" data-src="wechat-morse-code.png">
+    </div>
+    <script>
+        var fromCommandStringToBeep = (function() {
+            var ac = window.AudioContext ?
+                new AudioContext() :
+                new webkitAudioContext();
+            var _osc;
+            var _gain;
+            var _tid = null;
+
+            var create = function() {
+                _gain = ac.createGain();
+                _osc = ac.createOscillator();
+
+                _osc.frequency.value = 880;
+                _osc.connect(_gain);
+                _gain.gain.value = 0.125;
+                _gain.connect(ac.destination);
+            };
+
+            return function(message) {
+                if (!_tid && message === "DOWN" && !closeSoundFlag) {
+                    create();
+                    _osc.start()
+
+                    _tid = setTimeout(function() {
+                        // 注释之后长按不会自动停止
+                        // _tid = null;
+                        // _osc.stop();
+                    }, 1000)
+                }
+
+                if (_tid && (message === "UP")) {
+                    clearTimeout(_tid);
+                    _tid = null;
+                    _osc.stop()
+                }
+
+                return message;
+            }
+        })();
+
+        /**
+         * 输入摩斯密码内容
+         * @param  string code 摩斯密码/空格
+         * @return void
+         */
+        function inputMorseContent(code, rtrim) {
+            rtrim = rtrim || false;
+            if (rtrim) {
+                document.querySelector('#morse-code-content').value = document.querySelector('#morse-code-content').value.replace(/ +$/, '') + code;
+            } else {
+                document.querySelector('#morse-code-content').value = document.querySelector('#morse-code-content').value + code;
+            }
+        }
+
+        /**
+         * 输入单词内容
+         * @param  string char 字符/空格
+         * @return void
+         */
+        function inputWordContent(char) {
+            document.querySelector('#word-content').value = document.querySelector('#word-content').value + char;
+        }
+
+        /**
+         * 翻译摩斯密码为字符
+         * @param  string morseCode 摩斯密码
+         * @return string 字符
+         */
+        function fromCodeToChar(code) {
+            code = code.replace(/[—-]/g, '_');
+            code = code.replace(/\*/g, '.');
+            const CODE_TO_CHAR_TABLE = {
+                "": " ",
+                " ": " ",
+                "_____": "0",
+                ".____": "1",
+                "..___": "2",
+                "...__": "3",
+                "...._": "4",
+                ".....": "5",
+                "_....": "6",
+                "__...": "7",
+                "___..": "8",
+                "____.": "9",
+                "._": "a",
+                "_...": "b",
+                "_._.": "c",
+                "_..": "d",
+                ".": "e",
+                ".._.": "f",
+                "__.": "g",
+                "....": "h",
+                "..": "i",
+                ".___": "j",
+                "_._": "k",
+                "._..": "l",
+                "__": "m",
+                "_.": "n",
+                "___": "o",
+                ".__.": "p",
+                "__._": "q",
+                "._.": "r",
+                "...": "s",
+                "_": "t",
+                ".._": "u",
+                "..._": "v",
+                ".__": "w",
+                "_.._": "x",
+                "_.__": "y",
+                "__..": "z",
+                "._._._": ".",
+                "__..__": ",",
+                "..__..": "?",
+                ".____.": "'",
+                "_.._.": "/g",
+                "_.__.": "(",
+                "_.__._": ")",
+                "._...": "&",
+                "___...": ":",
+                "_._._.": ";",
+                "_..._": "=",
+                "._._.": "+",
+                "_...._": "-",
+                "..__._": "_",
+                "._.._.": "\"",
+                "..._.._": "$",
+                "_._.__": "!",
+                ".__._.": "@"
+            };
+
+            return CODE_TO_CHAR_TABLE[code];
+        }
+
+        /**
+         * 翻译字符为摩斯密码
+         * @param  string char 字符
+         * @return string 摩斯密码
+         */
+        function fromCharToCode(char) {
+            const CHAR_TO_CODE_TABLE = {
+                " ": "",
+                "": " ",
+                "a": "._",
+                "b": "_...",
+                "c": "_._.",
+                "d": "_..",
+                "e": ".",
+                "f": ".._.",
+                "g": "__.",
+                "h": "....",
+                "i": "..",
+                "j": ".___",
+                "k": "_._",
+                "l": "._..",
+                "m": "__",
+                "n": "_.",
+                "o": "___",
+                "p": ".__.",
+                "q": "__._",
+                "r": "._.",
+                "s": "...",
+                "t": "_",
+                "u": ".._",
+                "v": "..._",
+                "w": ".__",
+                "x": "_.._",
+                "y": "_.__",
+                "z": "__..",
+                "1": ".____",
+                "2": "..___",
+                "3": "...__",
+                "4": "...._",
+                "5": ".....",
+                "6": "_....",
+                "7": "__...",
+                "8": "___..",
+                "9": "____.",
+                "0": "_____",
+                ".": "._._._",
+                ",": "__..__",
+                "?": "..__..",
+                "'": ".____.",
+                "/": "_.._.",
+                "(": "_.__.",
+                ")": "_.__._",
+                "&": "._...",
+                ": ": "___...",
+                ";": "_._._.",
+                "=": "_..._",
+                "+": "._._.",
+                "-": "_...._",
+                "_": "..__._",
+                "\"": "._.._.",
+                "$": "..._.._",
+                "!": "_._.__",
+                "@": ".__._."
+            };
+
+            return CHAR_TO_CODE_TABLE[char];
+        }
+
+        /**
+         * 重放摩斯密码
+         * @param  string code 摩斯密码
+         */
+        function doPlay(code) {
+            if (code.length) {
+                var playCode = code[0];
+                code = code.substring(1);
+                if (playCode == '.') {
+                    playDi(function() {
+                        console.log(code);
+                        doPlay(code);
+                    });
+                } else if (playCode == '_') {
+                    playDa(function() {
+                        console.log(code);
+                        doPlay(code);
+                    });
+                } else {
+                    playGap(function() {
+                        console.log(code);
+                        doPlay(code);
+                    });
+                }
+            }
+        }
+
+        function playDi(callback) {
+            fromCommandStringToBeep('DOWN');
+            setTimeout(function() {
+                fromCommandStringToBeep('UP');
+                if (typeof callback == 'function') {
+                    setTimeout(function() {
+                        callback();
+                    }, playTick);
+                }
+            }, playTick);
+        }
+
+        function playDa(callback) {
+            fromCommandStringToBeep('DOWN');
+            setTimeout(function() {
+                fromCommandStringToBeep('UP');
+                if (typeof callback == 'function') {
+                    setTimeout(function() {
+                        callback();
+                    }, playTick * 3);
+                }
+            }, playTick * 3);
+        }
+
+        function playGap(callback) {
+            setTimeout(function() {
+                callback();
+            }, playTick * 2);
+        }
+
+        function clickDown(e) {
+            //停止录入
+            if (stopTypeinFlag) {
+                return true;
+            }
+            //忽略箭头操作
+            e = e || window.event;
+            var code = 0;
+            if (e.keyCode) {
+                code = e.keyCode;
+            } else if (e.which) {
+                code = e.which;
+            }
+            if (!!code && code >= 37 && code <= 40) {
+                return true;
+            }
+
+            if (!!code && code == 123) {
+                e.returnValue = false;
+                return false;
+            }
+
+            //有操作清理自动翻译
+            clearTimeout(autoTranslateTimer);
+            clearTimeout(autoBreakWordTimer);
+
+            if (!clickDownTimer) {
+                clickDownTimer = (new Date()).valueOf(); //毫秒时间戳
+            }
+            if (firstClick) {
+                //标记为非首次
+                firstClick = false;
+                clickUpTimer = clickDownTimer;
+            }
+            //无操作时间（停顿时间）
+            useMicroSeconds = clickDownTimer - clickUpTimer;
+
+            console.log('停顿时间：' + useMicroSeconds);
+
+            fromCommandStringToBeep('DOWN');
+        }
+
+        function clickUp(e) {
+            //停止录入
+            if (stopTypeinFlag) {
+                fromCommandStringToBeep('UP');
+                return true;
+            }
+            //忽略箭头操作
+            e = e || window.event;
+            var code = 0;
+            if (e.keyCode) {
+                code = e.keyCode;
+            } else if (e.which) {
+                code = e.which;
+            }
+
+            if (!!code && code >= 37 && code <= 40) {
+                return true;
+            }
+
+            if (!!code && code == 123) {
+                e.returnValue = false;
+                return false;
+            }
+
+            //有操作清理自动翻译
+            clearTimeout(autoTranslateTimer);
+            clearTimeout(autoBreakWordTimer);
+
+            clickUpTimer = (new Date()).valueOf(); //毫秒时间戳
+            console.log("clickUpTimer：" + clickUpTimer);
+
+            useMicroSeconds = 0;
+            if (!!clickDownTimer && !!clickUpTimer) {
+                useMicroSeconds = clickUpTimer - clickDownTimer;
+            }
+            clickDownTimer = '';
+
+            if (useMicroSeconds <= diMicoSecondMax) {
+                inputCode('.');
+                console.log('按下抬起时间：' + useMicroSeconds + ", code: .");
+            } else {
+                inputCode('_');
+                console.log('按下抬起时间：' + useMicroSeconds + ", code: _");
+            }
+
+            fromCommandStringToBeep('UP');
+
+            // 字符分割计时器，超过单词内最短间隔时间，则翻译字符
+            console.log("autoTranslateTimer start:" + (new Date()).valueOf());
+            autoTranslateTimer = setTimeout(function() {
+                if (!!clickUpTimer) {
+                    inputCode('translate');
+                }
+            }, inWordStopMicoSecondMin);
+
+            //单词分割计时器
+            console.log("autoBreakWordTimer start:" + (new Date()).valueOf());
+            autoBreakWordTimer = setTimeout(function() {
+                if (!!clickUpTimer) {
+                    inputCode('break_word');
+                }
+            }, breakWordStopMicoSecondMin);
+        }
+
+        /**
+         * 录入摩斯密码，
+         */
+        function inputCode(code) {
+            //清屏
+            if (code == 'clear') {
+                newCode = '';
+                clearTimeout(autoTranslateTimer);
+                clearTimeout(autoBreakWordTimer);
+                document.querySelector('#morse-code-content').value = '';
+                document.querySelector('#word-content').value = '';
+                return;
+            }
+            //字符或单词输入完毕
+            if (code == 'translate') {
+                if (!newCode) return;
+                console.log("newCode:" + newCode);
+                var char = fromCodeToChar(newCode);
+                if (typeof char == typeof undefined) {
+                    char = '?';
+                }
+                inputWordContent(char);
+
+                newCode = '';
+                inputMorseContent('/', true);
+                return;
+            } else if (code == 'break_word') {
+                inputWordContent(' ');
+                inputMorseContent('/', true);
+                return;
+            } else {
+                newCode += code;
+            }
+            inputMorseContent(code);
+        }
+
+        /**
+         * 清屏
+         */
+        function clearOff() {
+            inputCode('clear');
+            document.querySelector('#clear-btn').blur();
+        }
+
+        /**
+         * 停止录入
+         */
+        function stopTypein(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            //原来不是停止录入状态，设置为停止录入
+            if (!stopTypeinFlag) {
+                stopTypeinFlag = true;
+                clearTimeout(autoTranslateTimer);
+                clearTimeout(autoBreakWordTimer);
+                document.querySelector('#stop-btn').value = '恢复录入';
+                document.querySelector('#morse-code-content').value = document.querySelector('#morse-code-content').value.substring(0, document.querySelector('#morse-code-content').value.length - 1);
+                clickUp();
+            } else {
+                document.querySelector('#stop-btn').value = '停止录入';
+                stopTypeinFlag = false;
+            }
+        }
+
+        /**
+         * 点击播放
+         * @param  event e 事件
+         */
+        function clickPlay(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            newCode = '';
+            var currentStopTypeinFlag = stopTypeinFlag;
+            stopTypeinFlag = true;
+            // console.log("clickPlay:" + (new Date()).valueOf());
+            // console.log(document.querySelector('#morse-code-content').value)
+            var codes = document.querySelector('#morse-code-content').value.replace(/\/+$/, '');
+            if(!codes.length) {
+                fromCommandStringToBeep('UP');
+                stopTypeinFlag = currentStopTypeinFlag;
+                return false;
+            }
+            doPlay(codes);
+            stopTypeinFlag = currentStopTypeinFlag;
+        }
+
+        /**
+         * 明文转摩斯密码
+         */
+        function toCode(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var chars = document.querySelector("#word-content").value;
+            if(!chars.length) {
+                fromCommandStringToBeep('UP');
+                return false;
+            }
+            document.querySelector('#morse-code-content').value = ''; //清空摩斯密码输入内容
+
+            inputMorseContent(translateCharToCode(chars));
+            
+            document.querySelector('#to-code-btn').blur();
+        }
+
+        /**
+         * 摩斯密码转明文
+         */
+        function toChar(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var codes = document.querySelector("#morse-code-content").value;
+
+            if(!codes.length) {
+                fromCommandStringToBeep('UP');
+                return false;
+            }
+
+            //自动兼容空格分割模式
+            if (codes.indexOf(' ') != -1) {
+                codes = codes.replace(/ {3,7}/g, '//'); //单词外斜线
+                codes = codes.replace(/ /g, '/'); //单词内斜线
+            }
+
+            document.querySelector('#word-content').value = ''; //清空单词输入内容
+
+            inputWordContent(translateCodeToChar(codes));
+
+            document.querySelector('#to-char-btn').blur();
+        }
+
+        /**
+         * 翻译密文内容成明文
+         * @param string codes 密文
+         * @return string
+         */
+        function translateCodeToChar(codes)
+        {
+            var chars = '';
+            var wordCode = '';
+            for (var i = 0; i < codes.length; i++) {
+                //单词间隔双斜线
+                if (codes[i] == '/') {
+                    if (wordCode) {
+                        var char = fromCodeToChar(wordCode);
+                        if (typeof char != typeof undefined) {
+                            space = '';
+                            if (codes.substr(i, 2) == '//') {
+                                space = ' ';
+                            }
+                            chars += char + space;
+                        }
+                        wordCode = '';
+                    }
+                } else {
+                    //累计摩斯密码
+                    wordCode += codes[i];
+                }
+            }
+            if (wordCode) {
+                var char = fromCodeToChar(wordCode);
+                if (typeof char != typeof undefined) {
+                    chars += char;
+                }
+            }
+
+            return chars;
+        }
+
+        /**
+         * 翻译明文为密文
+         * @param  string chars
+         */
+        function translateCharToCode(chars)
+        {
+            var codes = '';
+            for (var i = 0; i < chars.length; i++) {
+                //单词间隔双斜线
+                if (chars[i] == ' ') {
+                    codes += '/';
+                } else {
+                    var code = fromCharToCode(chars[i]);
+                    if (typeof code != typeof undefined) {
+                        codes += code + '/';
+                    }
+                }
+            }
+            return codes;
+        }
+
+        /**
+         * 显示/隐藏使用说明
+         * @return {[type]} [description]
+         */
+        function toggleTips(e)
+        {
+            e.stopPropagation();
+            e.preventDefault();
+
+            var className = document.querySelector('#toggle-tips').className;
+            if(className.indexOf('show-tips') != -1) {
+                document.querySelector('#toggle-tips').innerText = '[显示]';
+                document.querySelector('#toggle-tips').className = className.replace('show-tips', 'hide-tips');
+                document.querySelector('.tips-info').style.display = 'none';
+                document.querySelector('#wechat-miniprogram-morsecode').style.display = 'none';
+            } else {
+                document.querySelector('#toggle-tips').innerText = '[隐藏]';
+                document.querySelector('#toggle-tips').className = className.replace('hide-tips', 'show-tips');
+                document.querySelector('.tips-info').style.display = 'block';
+                document.querySelector('#wechat-miniprogram-morsecode').style.display = 'block';
+            }
+            newCode = '';
+            clearTimeout(autoTranslateTimer);
+            clearTimeout(autoBreakWordTimer);
+            fromCommandStringToBeep('UP');
+            return false;
+        }
+
+        /**
+         * 静音处理
+         * @param  {[type]} e [description]
+         * @return {[type]}   [description]
+         */
+        function toggleSound(e)
+        {
+            e.stopPropagation();
+            e.preventDefault();
+
+            //原来不是静音状态，设置为静音
+            if (!closeSoundFlag) {
+                closeSoundFlag = true;
+                document.querySelector('#toggle-sound-btn').value = '取消静音';
+            } else {
+                document.querySelector('#toggle-sound-btn').value = '静音';
+                closeSoundFlag = false;
+            }
+            fromCommandStringToBeep('UP');
+            document.querySelector('#toggle-sound-btn').blur();
+            return false;
+        }
+
+        /**
+         * 密文变更
+         */
+        function codeContentChange()
+        {
+            // console.log(document.querySelector('#morse-code-content').value);
+            // 密文被加锁，直接返回
+            if(document.querySelector('#morse-code-content').getAttribute('data-lock')) {
+                return false;
+            }
+
+            // 锁住明文变更
+            document.querySelector('#word-content').setAttribute('data-lock', true);
+
+            document.querySelector('#word-content').value = ''; //清空明文输入内容
+
+            inputWordContent(translateCodeToChar(document.querySelector('#morse-code-content').value));
+
+            // 释放明文变更锁
+            document.querySelector('#word-content').removeAttribute('data-lock');            
+        }
+
+        /**
+         * 明文变更
+         */
+        function wordContentChange()
+        {
+            // console.log(document.querySelector('#word-content').value);
+            // 明文被加锁，直接返回
+            if(document.querySelector('#word-content').getAttribute('data-lock')) {
+                return false;
+            }
+
+            // 锁住密文变更
+            document.querySelector('#morse-code-content').setAttribute('data-lock', true);
+
+            document.querySelector('#morse-code-content').value = ''; //清空密文输入内容
+
+            inputMorseContent(translateCharToCode(document.querySelector('#word-content').value));
+
+            // 释放密文变更锁
+            document.querySelector('#morse-code-content').removeAttribute('data-lock');            
+        }
+
+        //Author: Zjmainstay
+        var author = 'Zjmainstay';
+        console.log("Author: " + author);
+
+        //输入时间计时器
+        var clickDownTimer, clickUpTimer, autoTranslateTimer, autoBreakWordTimer, useMicroSeconds,
+            newCode = '',
+            firstClick = true,
+            playTick = 120,
+            closeSoundFlag = false,    //静音标记
+            stopTypeinFlag = false;
+        var inWordStopMicoSecondMin = 300; //单词内间隔最短时间，大于这个值且小于单词外间隔最短时间，认为是单词内，摩斯密码间隔一个空格
+        var breakWordStopMicoSecondMin = 1000; //单词外间隔最短时间，大于这个值认为是单词间隔，摩斯密码间隔三个空格
+        var diMicoSecondMax = 150; //200毫秒内认为是嘀，大于100毫秒认为是嗒
+        var inWordGap = '/'; //单词内分割符
+        var breakWordGap = '//'; //单词外分割符
+        var breakWordGapLen = 2; //单词外分割符长度
+
+        //全页面键盘按下、抬起效果
+        document.addEventListener('keydown', clickDown);
+        document.addEventListener('keyup', clickUp);
+        document.addEventListener('touchstart', clickDown);
+        document.addEventListener('touchend', clickUp);
+        document.oncontextmenu = new Function("return false;");
+
+        //点击录入
+        document.querySelector('#typein-btn').addEventListener('mousedown', clickDown);
+        document.querySelector('#typein-btn').addEventListener('mouseup', clickUp);
+        document.querySelector('#typein-btn').addEventListener('touchstart', clickDown);
+        document.querySelector('#typein-btn').addEventListener('touchend', clickDown);
+
+        //清屏
+        document.querySelector('#clear-btn').addEventListener('click', clearOff);
+        document.querySelector('#clear-btn').addEventListener('touchend', clearOff);
+
+        //停止录入
+        document.querySelector('#stop-btn').addEventListener('click', stopTypein);
+        document.querySelector('#stop-btn').addEventListener('touchend', stopTypein);
+
+        //点击播放
+        document.querySelector('#play-btn').addEventListener('click', clickPlay);
+        document.querySelector('#play-btn').addEventListener('touchend', clickPlay);
+
+        //明文转摩斯密码
+        document.querySelector('#to-code-btn').addEventListener('click', toCode);
+        document.querySelector('#to-code-btn').addEventListener('touchend', toCode);
+
+        //摩斯密码转明文
+        document.querySelector('#to-char-btn').addEventListener('click', toChar);
+        document.querySelector('#to-char-btn').addEventListener('touchend', toChar);
+
+        //使用说明隐藏/显示
+        document.querySelector('#toggle-tips').addEventListener('click', toggleTips);
+        document.querySelector('#toggle-tips').addEventListener('touchend', toggleTips);
+
+        //静音
+        document.querySelector('#toggle-sound-btn').addEventListener('click', toggleSound);
+        document.querySelector('#toggle-sound-btn').addEventListener('touchend', toggleSound);
+
+        //密文、明文变更监听
+        document.querySelector('#morse-code-content').addEventListener('keyup', codeContentChange);
+        document.querySelector('#word-content').addEventListener('keyup', wordContentChange);
+
+        setTimeout(function() {
+            var imgs = document.querySelectorAll('.lazy-img');
+            for (var i in imgs) {
+                if (typeof imgs[i] == 'object') {
+                    imgs[i].src = imgs[i].getAttribute("data-src");
+                }
+            }
+        }, 10);
+
+        //百度统计
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?2778aed5b668aa63a50ae9c5acd178f8";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+</body>
+</html>
